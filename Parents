@@ -1,0 +1,2942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brainy Hive Schools - Parent-Teacher Connect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        
+        .gradient-bg {
+            background: #c6398f;
+        }
+        
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .message-bubble {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .notification-badge {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .low-data-mode img {
+            filter: contrast(0.8) brightness(1.1);
+        }
+        
+        .offline-indicator {
+            background: #f59e0b;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .btn-loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="offline-indicator" id="offlineIndicator">📱 Offline Mode</div>
+    
+    <!-- App Container -->
+    <div class="max-w-md mx-auto bg-white min-h-screen relative">
+        
+        <!-- Splash/Onboarding Screen -->
+        <div id="splashScreen" class="screen gradient-bg text-white p-6 min-h-screen flex flex-col justify-center items-center">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-4 mx-auto">
+                    <span class="text-3xl">👩‍🏫👶</span>
+                </div>
+                <h1 class="text-2xl font-bold mb-2">Brainy Hive Schools</h1>
+                <p class="text-lg opacity-90">Parent-Teacher Connect</p>
+            </div>
+            
+            <div class="w-full max-w-sm space-y-4">
+                <button onclick="showRoleSelection()" class="w-full bg-white text-purple-600 py-3 px-6 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
+                    Get Started
+                </button>
+                <p class="text-sm text-center opacity-80">
+                    Stay connected with your child's daily progress, health updates, and school announcements.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Role Selection -->
+        <div id="roleSelection" class="screen hidden p-6 min-h-screen bg-white">
+            <div class="text-center mb-8 pt-12">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Choose Your Role</h2>
+                <p class="text-gray-600">Select how you'll be using Brainy Hive Connect</p>
+            </div>
+            
+            <div class="space-y-4">
+                <button onclick="showAdminOptions()" class="w-full p-4 border-2 border-purple-200 rounded-lg hover:border-purple-400 transition-colors text-left">
+                    <div class="flex items-center">
+                        <span class="text-2xl mr-4">👨‍💼</span>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">School Admin</h3>
+                            <p class="text-sm text-gray-600">Register new account or login</p>
+                        </div>
+                    </div>
+                </button>
+                
+                <button onclick="showLogin('teacher')" class="w-full p-4 border-2 border-blue-200 rounded-lg hover:border-blue-400 transition-colors text-left">
+                    <div class="flex items-center">
+                        <span class="text-2xl mr-4">👩‍🏫</span>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Teacher</h3>
+                            <p class="text-sm text-gray-600">Login with admin-provided code</p>
+                        </div>
+                    </div>
+                </button>
+                
+                <button onclick="showLogin('parent')" class="w-full p-4 border-2 border-green-200 rounded-lg hover:border-green-400 transition-colors text-left">
+                    <div class="flex items-center">
+                        <span class="text-2xl mr-4">👨‍👩‍👧‍👦</span>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Parent</h3>
+                            <p class="text-sm text-gray-600">Login with admin-provided code</p>
+                        </div>
+                    </div>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Admin Options Screen -->
+        <div id="adminOptions" class="screen hidden p-6 min-h-screen bg-white">
+            <div class="text-center mb-8 pt-12">
+                <button onclick="showRoleSelection()" class="text-purple-600 mb-4">← Back</button>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Admin Access</h2>
+                <p class="text-gray-600">Choose your admin option</p>
+            </div>
+            
+            <div class="space-y-4">
+                <button onclick="showRegister()" class="w-full p-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                    <div class="text-center">
+                        <h3 class="font-semibold mb-1">Register New Admin Account</h3>
+                        <p class="text-sm opacity-90">Create the first admin account for your school</p>
+                    </div>
+                </button>
+                
+                <button onclick="showLogin('admin')" class="w-full p-4 border-2 border-purple-200 rounded-lg hover:border-purple-400 transition-colors">
+                    <div class="text-center">
+                        <h3 class="font-semibold text-gray-800 mb-1">Login to Existing Account</h3>
+                        <p class="text-sm text-gray-600">Access your admin dashboard</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Registration Screen -->
+        <div id="registerScreen" class="screen hidden p-6 min-h-screen bg-white">
+            <div class="pt-12 mb-8">
+                <button onclick="showAdminOptions()" class="text-purple-600 mb-4">← Back</button>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Register Admin Account</h2>
+                <p class="text-gray-600">Create the first admin account for your school</p>
+            </div>
+            
+            <form id="registrationForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">School Name</label>
+                    <input type="text" id="schoolName" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Brainy Hive Schools" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Admin Name</label>
+                    <input type="text" id="adminName" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Your full name" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                    <input type="tel" id="adminPhone" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="+234 801 234 5678" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Create Master Password</label>
+                    <input type="password" id="masterPassword" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Create a secure password" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                    <input type="password" id="confirmPassword" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Confirm your password" required>
+                </div>
+                
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-blue-800 mb-2">Privacy & Data Protection</h4>
+                    <p class="text-sm text-blue-700">We collect minimal personal information and only use it to facilitate parent-teacher communication. Your data is never shared with third parties and is stored securely on Nigerian servers.</p>
+                    <label class="flex items-center mt-3">
+                        <input type="checkbox" id="privacyConsent" class="mr-2" required>
+                        <span class="text-sm text-blue-700">I agree to the privacy policy and terms of service</span>
+                    </label>
+                </div>
+                
+                <button type="submit" id="registerBtn" class="w-full bg-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-purple-700 transition-colors">
+                    Create Admin Account
+                </button>
+            </form>
+        </div>
+        
+        <!-- Login Screen -->
+        <div id="loginScreen" class="screen hidden p-6 min-h-screen bg-white">
+            <div class="pt-12 mb-8">
+                <button onclick="goBackToRoleSelection()" class="text-purple-600 mb-4">← Back</button>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2" id="loginTitle">Login</h2>
+                <p class="text-gray-600" id="loginSubtitle">Enter your details to continue</p>
+            </div>
+            
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                    <input type="tel" id="phoneInput" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="+234 801 234 5678" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2" id="codeLabel">Access Code</label>
+                    <input type="text" id="codeInput" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Enter 6-digit code" required>
+                </div>
+                
+
+                
+                <button type="submit" id="loginBtn" class="w-full bg-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-purple-700 transition-colors">
+                    Continue
+                </button>
+            </form>
+        </div>
+        
+        <!-- Admin Dashboard -->
+        <div id="adminDashboard" class="screen hidden">
+            <!-- Header -->
+            <div class="bg-purple-600 text-white p-4">
+                <div class="flex justify-between items-center">
+                    <h1 class="text-xl font-bold">Admin Dashboard</h1>
+                    <button onclick="showSettings()" class="p-2 hover:bg-purple-700 rounded">⚙️</button>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="p-4 grid grid-cols-3 gap-4">
+                <div class="bg-blue-50 p-3 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-blue-600" id="totalTeachersCount">0</div>
+                    <div class="text-xs text-gray-600">Active Teachers</div>
+                </div>
+                <div class="bg-green-50 p-3 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-green-600" id="totalParentsCount">0</div>
+                    <div class="text-xs text-gray-600">Parents</div>
+                </div>
+                <div class="bg-orange-50 p-3 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-orange-600" id="totalMessagesCount">0</div>
+                    <div class="text-xs text-gray-600">Messages Sent</div>
+                </div>
+            </div>
+            
+            <!-- Action Cards -->
+            <div class="p-4 space-y-4">
+                <div class="card-shadow bg-white rounded-lg p-4">
+                    <h3 class="font-semibold text-gray-800 mb-3">Generate Access Codes</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <input type="text" id="teacherNameInput" class="w-full p-2 border border-gray-300 rounded-lg mb-2 text-sm" placeholder="Teacher's full name">
+                            <input type="text" id="teacherClassInput" class="w-full p-2 border border-gray-300 rounded-lg mb-2 text-sm" placeholder="Class/Grade (e.g., Grade 9A, JSS 2B)">
+                            <button onclick="generateCode('teacher')" class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors">
+                                Generate Teacher Code
+                            </button>
+                        </div>
+                        <div>
+                            <input type="text" id="parentNameInput" class="w-full p-2 border border-gray-300 rounded-lg mb-2 text-sm" placeholder="Parent's full name">
+                            <button onclick="generateCode('parent')" class="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors">
+                                Generate Parent Code
+                            </button>
+                        </div>
+                    </div>
+                    <div id="generatedCode" class="hidden mt-3 p-3 bg-gray-50 rounded-lg">
+                        <p class="text-sm text-gray-600">Generated Code for <span id="codeUserName" class="font-medium"></span>:</p>
+                        <p class="font-mono text-lg font-bold" id="codeDisplay"></p>
+                        <button onclick="copyCode()" class="text-sm text-purple-600 hover:underline">Copy to clipboard</button>
+                    </div>
+                </div>
+                
+                <div class="card-shadow bg-white rounded-lg p-4">
+                    <h3 class="font-semibold text-gray-800 mb-3">Broadcast Message</h3>
+                    <textarea id="broadcastMessage" class="w-full p-3 border border-gray-300 rounded-lg resize-none" rows="3" placeholder="Type your message to all parents..."></textarea>
+                    <div class="flex justify-between items-center mt-3">
+                        <span class="text-sm text-gray-500" id="charCount">0/160 characters</span>
+                        <button onclick="sendBroadcast()" class="bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors">
+                            Send to All Parents
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card-shadow bg-white rounded-lg p-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-semibold text-gray-800">All Messages</h3>
+                        <button onclick="showAdminMessages()" class="text-purple-600 text-sm hover:underline">View All</button>
+                    </div>
+                    <div class="space-y-2" id="adminRecentMessages">
+                        <!-- Recent messages will be populated here -->
+                    </div>
+                    
+                    <div id="adminNoMessages" class="text-center py-6 text-gray-500">
+                        <div class="text-3xl mb-2">📬</div>
+                        <p class="text-sm">No messages sent yet</p>
+                        <p class="text-xs">Messages from teachers will appear here</p>
+                    </div>
+                </div>
+                
+                <div class="card-shadow bg-white rounded-lg p-4">
+                    <h3 class="font-semibold text-gray-800 mb-3">Recent Activity</h3>
+                    <div class="space-y-2" id="recentActivityList">
+                        <!-- Recent activity will be populated here -->
+                    </div>
+                    
+                    <div id="noActivityState" class="text-center py-6 text-gray-500">
+                        <div class="text-3xl mb-2">📊</div>
+                        <p class="text-sm">No recent activity</p>
+                        <p class="text-xs">Activity will appear here as you use the system</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Teacher Dashboard -->
+        <div id="teacherDashboard" class="screen hidden">
+            <!-- Header -->
+            <div class="bg-blue-600 text-white p-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-xl font-bold">Teacher Dashboard</h1>
+                        <p class="text-sm opacity-90" id="teacherInfo">Teacher - Grade 9A</p>
+                    </div>
+                    <button onclick="showSettings()" class="p-2 hover:bg-blue-700 rounded">⚙️</button>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="p-4 grid grid-cols-2 gap-3">
+                <button onclick="showCompose()" class="bg-green-500 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-600 transition-colors">
+                    📝 Send Update
+                </button>
+                <button onclick="showStudentManagement()" class="bg-blue-500 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-600 transition-colors">
+                    👥 Manage Students
+                </button>
+            </div>
+            
+            <!-- Student List -->
+            <div class="px-4">
+                <h3 class="font-semibold text-gray-800 mb-3">Your Students (<span id="dashboardStudentCount">0</span>)</h3>
+                <div class="space-y-2" id="dashboardStudentList">
+                    <!-- Students will be populated here -->
+                </div>
+                
+                <div id="dashboardEmptyState" class="text-center py-8 text-gray-500">
+                    <div class="text-4xl mb-2">👥</div>
+                    <p>No students in your class yet</p>
+                    <button onclick="showStudentManagement()" class="text-blue-600 hover:underline text-sm mt-2">Add students to get started</button>
+                </div>
+            </div>
+            
+            <!-- Recent Messages & Replies -->
+            <div class="p-4 mt-6">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-semibold text-gray-800">Messages & Replies</h3>
+                    <button onclick="showTeacherInbox()" class="text-blue-600 text-sm hover:underline">View All</button>
+                </div>
+                <div class="space-y-3" id="teacherRecentMessages">
+                    <!-- Recent messages will be populated here -->
+                </div>
+                
+                <div id="teacherNoMessages" class="text-center py-6 text-gray-500">
+                    <div class="text-3xl mb-2">📝</div>
+                    <p class="text-sm">No messages sent yet</p>
+                    <button onclick="showCompose()" class="text-blue-600 hover:underline text-sm mt-1">Send your first update</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Parent Dashboard -->
+        <div id="parentDashboard" class="screen hidden">
+            <!-- Header -->
+            <div class="bg-green-600 text-white p-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-xl font-bold">Parent Dashboard</h1>
+                        <p class="text-sm opacity-90" id="parentInfo">Welcome, Parent</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="notification-badge w-2 h-2 bg-red-500 rounded-full"></div>
+                        <button onclick="showSettings()" class="p-2 hover:bg-green-700 rounded">⚙️</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Child Selector -->
+            <div class="p-4 bg-white border-b">
+                <select id="childSelector" onchange="switchChild()" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    <option value="adebola">Adebayo Adebola - Grade 9A</option>
+                    <option value="kemi">Adebayo Kemi - Grade 7B</option>
+                </select>
+            </div>
+            
+            <!-- Today's Summary -->
+            <div class="p-4 bg-gradient-to-r from-green-50 to-blue-50">
+                <h3 class="font-semibold text-gray-800 mb-3">Today's Summary</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-white rounded-lg p-3 text-center">
+                        <div class="text-2xl mb-1">😊</div>
+                        <div class="text-sm text-gray-600">Good Health</div>
+                    </div>
+                    <div class="bg-white rounded-lg p-3 text-center">
+                        <div class="text-2xl mb-1">✅</div>
+                        <div class="text-sm text-gray-600">Homework Done</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Messages Feed -->
+            <div class="p-4">
+                <h3 class="font-semibold text-gray-800 mb-3">Recent Updates</h3>
+                <div class="space-y-4" id="messagesFeed">
+                    <!-- Messages will be populated here -->
+                </div>
+                
+                <div id="noMessagesState" class="text-center py-8 text-gray-500">
+                    <div class="text-4xl mb-2">📬</div>
+                    <p>No messages yet</p>
+                    <p class="text-sm">Your child's teacher will send updates here</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Compose Message Screen -->
+        <div id="composeScreen" class="screen hidden">
+            <div class="bg-blue-600 text-white p-4">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="mr-3 p-1 hover:bg-blue-700 rounded">←</button>
+                    <h1 class="text-xl font-bold">Send Update</h1>
+                </div>
+            </div>
+            
+            <div class="p-4">
+                <form id="composeForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Select Student</label>
+                        <select id="studentSelect" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                            <option value="">Choose a student...</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">
+                            <span id="noStudentsMessage" class="hidden">No students added yet. </span>
+                            <button onclick="showStudentManagement()" class="text-blue-600 hover:underline">Manage students</button>
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Quick Tags</label>
+                        <div class="flex flex-wrap gap-2" id="tagSelector">
+                            <button type="button" onclick="toggleTag('health-good')" class="tag-btn bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-green-100 hover:text-green-700">😊 Good Health</button>
+                            <button type="button" onclick="toggleTag('health-concern')" class="tag-btn bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-yellow-100 hover:text-yellow-700">🤒 Health Concern</button>
+                            <button type="button" onclick="toggleTag('homework-done')" class="tag-btn bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-blue-100 hover:text-blue-700">✅ Homework Complete</button>
+                            <button type="button" onclick="toggleTag('homework-missing')" class="tag-btn bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-red-100 hover:text-red-700">❌ Homework Missing</button>
+                            <button type="button" onclick="toggleTag('behavior-excellent')" class="tag-btn bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-purple-100 hover:text-purple-700">⭐ Excellent Behavior</button>
+                            <button type="button" onclick="toggleTag('behavior-concern')" class="tag-btn bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-orange-100 hover:text-orange-700">⚠️ Behavior Concern</button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                        <textarea id="messageText" class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500" rows="4" placeholder="Share details about the student's day..."></textarea>
+                        <div class="flex justify-between items-center mt-2">
+                            <span class="text-sm text-gray-500" id="messageCharCount">0/160 characters</span>
+                            <button type="button" onclick="useTemplate()" class="text-blue-600 text-sm hover:underline">Use Template</button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Attach Photo (Optional)</label>
+                        <input type="file" id="photoInput" accept="image/*" class="w-full p-3 border border-gray-300 rounded-lg">
+                        <p class="text-xs text-gray-500 mt-1">Photos are automatically compressed for low-data users</p>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <button type="submit" class="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                            Send Update
+                        </button>
+                        <button type="button" onclick="saveDraft()" class="px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                            Save Draft
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Student Management Screen -->
+        <div id="studentManagementScreen" class="screen hidden">
+            <div class="bg-blue-600 text-white p-4">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="mr-3 p-1 hover:bg-blue-700 rounded">←</button>
+                    <h1 class="text-xl font-bold">Manage Students</h1>
+                </div>
+            </div>
+            
+            <!-- Add Student Form -->
+            <div class="p-4 bg-blue-50 border-b">
+                <h3 class="font-semibold text-gray-800 mb-3">Add New Student</h3>
+                <form id="addStudentForm" class="space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="text" id="studentFirstName" class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="First Name" required>
+                        <input type="text" id="studentLastName" class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Last Name" required>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="text" id="parentName" class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Parent/Guardian Name" required>
+                        <input type="tel" id="parentPhone" class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Parent Phone" required>
+                    </div>
+                    <div id="adminClassSelector" class="hidden">
+                        <select id="assignClassSelect" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="">Assign to Class (Optional)</option>
+                        </select>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button type="submit" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                            Add Student
+                        </button>
+                        <button type="button" onclick="importStudents()" class="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors">
+                            Import List
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Student List -->
+            <div class="p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold text-gray-800">Class Students (<span id="studentCount">0</span>)</h3>
+                    <div class="flex space-x-2">
+                        <button onclick="exportStudents()" class="text-blue-600 text-sm hover:underline">Export</button>
+                        <button onclick="clearAllStudents()" class="text-red-600 text-sm hover:underline">Clear All</button>
+                    </div>
+                </div>
+                
+                <div id="studentsList" class="space-y-2">
+                    <!-- Students will be populated here -->
+                </div>
+                
+                <div id="emptyState" class="text-center py-8 text-gray-500">
+                    <div class="text-4xl mb-2">👥</div>
+                    <p>No students added yet</p>
+                    <p class="text-sm">Add your first student using the form above</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Screen -->
+        <div id="settingsScreen" class="screen hidden">
+            <div class="bg-gray-800 text-white p-4">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="mr-3 p-1 hover:bg-gray-700 rounded">←</button>
+                    <h1 class="text-xl font-bold">Settings</h1>
+                </div>
+            </div>
+            
+            <div class="p-4 space-y-6">
+                <div class="bg-white card-shadow rounded-lg p-4">
+                    <h3 class="font-semibold text-gray-800 mb-4">Notifications</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Push Notifications</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">SMS Backup</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white card-shadow rounded-lg p-4">
+                    <h3 class="font-semibold text-gray-800 mb-4">Data & Privacy</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Low Data Mode</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" id="lowDataToggle" onchange="toggleLowDataMode()">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                        <button onclick="showPrivacyInfo()" class="text-blue-600 text-sm hover:underline">View Privacy Policy</button>
+                    </div>
+                </div>
+                
+                <div class="bg-white card-shadow rounded-lg p-4">
+                    <h3 class="font-semibold text-gray-800 mb-4">Cloud Sync</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Auto Sync</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" id="autoSyncToggle" onchange="toggleAutoSync()">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                        <button onclick="showCloudSetup()" class="w-full text-left text-blue-600 py-2 hover:underline">Setup Cloud Sync</button>
+                        <button onclick="manualSync()" class="w-full text-left text-gray-700 py-2">Sync Now</button>
+                        <div class="text-xs text-gray-500" id="lastSyncInfo">
+                            Last sync: Never
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white card-shadow rounded-lg p-4">
+                    <h3 class="font-semibold text-gray-800 mb-4">Account</h3>
+                    <div class="space-y-3">
+                        <button class="w-full text-left text-gray-700 py-2">Update Phone Number</button>
+                        <button class="w-full text-left text-gray-700 py-2">Change Language</button>
+                        <button onclick="exportData()" class="w-full text-left text-blue-600 py-2">Export Data</button>
+                        <button onclick="logout()" class="w-full text-left text-red-600 py-2">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Template Modal -->
+        <div id="templateModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-6 m-4 max-w-sm w-full">
+                <h3 class="font-semibold text-gray-800 mb-4">Choose Template</h3>
+                <div class="space-y-3">
+                    <button onclick="selectTemplate('health')" class="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                        <div class="font-medium text-gray-800">Health Update</div>
+                        <div class="text-sm text-gray-600">Student's health status today</div>
+                    </button>
+                    <button onclick="selectTemplate('homework')" class="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                        <div class="font-medium text-gray-800">Homework & Resources</div>
+                        <div class="text-sm text-gray-600">Assignment completion and materials</div>
+                    </button>
+                    <button onclick="selectTemplate('progress')" class="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                        <div class="font-medium text-gray-800">Progress vs Expectation</div>
+                        <div class="text-sm text-gray-600">Academic performance update</div>
+                    </button>
+                </div>
+                <button onclick="closeTemplateModal()" class="w-full mt-4 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
+            </div>
+        </div>
+        
+        <!-- Cloud Setup Modal -->
+        <div id="cloudSetupModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-6 m-4 max-w-md w-full">
+                <h3 class="font-semibold text-gray-800 mb-4">🌐 Setup Cloud Sync</h3>
+                
+                <div class="mb-4 p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-blue-800 mb-2">How to Setup:</h4>
+                    <ol class="text-sm text-blue-700 space-y-1">
+                        <li>1. Go to <a href="https://jsonbin.io" target="_blank" class="underline">jsonbin.io</a></li>
+                        <li>2. Create a free account</li>
+                        <li>3. Create a new bin with the starter data</li>
+                        <li>4. Copy your Bin ID and API Key</li>
+                        <li>5. Enter them below</li>
+                    </ol>
+                </div>
+                
+                <form id="cloudSetupForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">JSON Bin ID</label>
+                        <input type="text" id="binIdInput" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="e.g., 507f1f77bcf86cd799439011" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">API Key</label>
+                        <input type="password" id="apiKeyInput" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Your JSON Bin API Key" required>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <button type="submit" class="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                            Setup Sync
+                        </button>
+                        <button type="button" onclick="closeCloudSetupModal()" class="px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <button onclick="showStarterData()" class="text-blue-600 text-sm hover:underline">📋 View Starter Data for JSON Bin</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Starter Data Modal -->
+        <div id="starterDataModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-6 m-4 max-w-2xl w-full max-h-96 overflow-y-auto">
+                <h3 class="font-semibold text-gray-800 mb-4">📋 Starter Data for JSON Bin</h3>
+                <p class="text-sm text-gray-600 mb-4">Copy this JSON and paste it when creating your new bin:</p>
+                
+                <div class="bg-gray-100 p-4 rounded-lg mb-4">
+                    <pre id="starterDataContent" class="text-xs text-gray-800 whitespace-pre-wrap overflow-x-auto"></pre>
+                </div>
+                
+                <div class="flex space-x-3">
+                    <button onclick="copyStarterData()" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                        📋 Copy to Clipboard
+                    </button>
+                    <button onclick="closeStarterDataModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Teacher Inbox Screen -->
+        <div id="teacherInboxScreen" class="screen hidden">
+            <div class="bg-blue-600 text-white p-4">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="mr-3 p-1 hover:bg-blue-700 rounded">←</button>
+                    <h1 class="text-xl font-bold">Messages & Replies</h1>
+                </div>
+            </div>
+            
+            <div class="p-4">
+                <div class="space-y-4" id="teacherInboxMessages">
+                    <!-- Teacher's messages and replies will be populated here -->
+                </div>
+                
+                <div id="teacherInboxEmpty" class="text-center py-8 text-gray-500">
+                    <div class="text-4xl mb-2">📬</div>
+                    <p>No messages sent yet</p>
+                    <button onclick="showCompose()" class="text-blue-600 hover:underline text-sm mt-2">Send your first update</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Admin Messages Screen -->
+        <div id="adminMessagesScreen" class="screen hidden">
+            <div class="bg-purple-600 text-white p-4">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="mr-3 p-1 hover:bg-purple-700 rounded">←</button>
+                    <h1 class="text-xl font-bold">All Messages</h1>
+                </div>
+            </div>
+            
+            <!-- Filter Options -->
+            <div class="p-4 bg-purple-50 border-b">
+                <div class="flex space-x-2 overflow-x-auto">
+                    <button onclick="filterAdminMessages('all')" class="admin-filter-btn bg-purple-600 text-white px-3 py-1 rounded-full text-sm whitespace-nowrap">All Messages</button>
+                    <button onclick="filterAdminMessages('today')" class="admin-filter-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm whitespace-nowrap">Today</button>
+                    <button onclick="filterAdminMessages('health')" class="admin-filter-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm whitespace-nowrap">Health</button>
+                    <button onclick="filterAdminMessages('homework')" class="admin-filter-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm whitespace-nowrap">Homework</button>
+                    <button onclick="filterAdminMessages('behavior')" class="admin-filter-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm whitespace-nowrap">Behavior</button>
+                </div>
+            </div>
+            
+            <!-- Messages List -->
+            <div class="p-4">
+                <div class="space-y-4" id="adminAllMessages">
+                    <!-- All messages will be populated here -->
+                </div>
+                
+                <div id="adminMessagesEmpty" class="text-center py-8 text-gray-500">
+                    <div class="text-4xl mb-2">📬</div>
+                    <p>No messages found</p>
+                    <p class="text-sm">Messages from teachers will appear here</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reply Screen -->
+        <div id="replyScreen" class="screen hidden">
+            <div class="bg-green-600 text-white p-4">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="mr-3 p-1 hover:bg-green-700 rounded">←</button>
+                    <div>
+                        <h1 class="text-xl font-bold">Reply to Teacher</h1>
+                        <p class="text-sm opacity-90" id="replyToTeacher">Mrs. Johnson</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Original Message -->
+            <div class="p-4 bg-green-50 border-b">
+                <h3 class="font-semibold text-gray-800 mb-2">Original Message</h3>
+                <div id="originalMessage" class="bg-white rounded-lg p-3">
+                    <!-- Original message content will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Reply Form -->
+            <div class="p-4">
+                <form id="replyForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Your Reply</label>
+                        <textarea id="replyText" class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-green-500" rows="4" placeholder="Type your reply to the teacher..." required></textarea>
+                        <div class="flex justify-between items-center mt-2">
+                            <span class="text-sm text-gray-500" id="replyCharCount">0/160 characters</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <button type="submit" class="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                            Send Reply
+                        </button>
+                        <button type="button" onclick="goBack()" class="px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Success Toast -->
+        <div id="successToast" class="fixed top-4 left-4 right-4 bg-green-500 text-white p-3 rounded-lg hidden z-50">
+            <div class="flex items-center">
+                <span class="mr-2">✅</span>
+                <span id="toastMessage">Message sent successfully!</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentUser = null;
+        let currentRole = null;
+        let selectedTags = [];
+        let isOffline = false;
+        let drafts = JSON.parse(localStorage.getItem('drafts') || '[]');
+
+        let classStudents = JSON.parse(localStorage.getItem('classStudents') || '[]');
+        
+        // Get students for current teacher's class
+        function getTeacherStudents() {
+            if (!currentUser || currentUser.role !== 'teacher') return [];
+            return classStudents.filter(student => student.teacherClass === currentUser.class);
+        }
+        
+        // Get all students (for admin view)
+        function getAllStudents() {
+            return classStudents;
+        }
+        
+        // Message templates
+        const templates = {
+            health: {
+                full: "[Student Name] had a good day health-wise. No concerns to report. Please ensure they get adequate rest tonight.",
+                sms: "[Student] healthy today. No concerns. Ensure good rest tonight."
+            },
+            homework: {
+                full: "[Student Name] completed today's assignments in [Subject]. Please review the attached materials and help with tomorrow's preparation.",
+                sms: "[Student] completed homework in [Subject]. Review materials for tomorrow."
+            },
+            progress: {
+                full: "[Student Name] is performing [above/at/below] expectations in [Subject]. [Specific feedback]. Let's discuss strategies to support their learning.",
+                sms: "[Student] performing [level] in [Subject]. [Brief feedback]. Let's discuss support."
+            }
+        };
+        
+        // Screen management - moved to enhanced version below
+        
+        function showRoleSelection() {
+            showScreen('roleSelection');
+        }
+        
+        function showAdminOptions() {
+            showScreen('adminOptions');
+        }
+        
+        function showRegister() {
+            showScreen('registerScreen');
+        }
+        
+        function showLogin(role) {
+            currentRole = role;
+            
+            const titles = {
+                admin: 'Admin Login',
+                teacher: 'Teacher Login', 
+                parent: 'Parent Login'
+            };
+            const subtitles = {
+                admin: 'Enter your phone and master password',
+                teacher: 'Use your phone and admin-provided code',
+                parent: 'Enter your phone and admin-provided code'
+            };
+            
+            document.getElementById('loginTitle').textContent = titles[role];
+            document.getElementById('loginSubtitle').textContent = subtitles[role];
+            
+            // Reset form fields
+            document.getElementById('phoneInput').value = '';
+            document.getElementById('codeInput').value = '';
+            
+            // Update login form for admin
+            if (role === 'admin') {
+                document.getElementById('codeInput').placeholder = 'Enter master password';
+                document.getElementById('codeInput').type = 'password';
+                document.getElementById('codeLabel').textContent = 'Master Password';
+            } else {
+                document.getElementById('codeInput').placeholder = 'Enter 6-digit code';
+                document.getElementById('codeInput').type = 'text';
+                document.getElementById('codeLabel').textContent = 'Access Code';
+            }
+            
+            showScreen('loginScreen');
+        }
+        
+        function goBackToRoleSelection() {
+            // Reset login state
+            currentRole = null;
+            showRoleSelection();
+        }
+        
+        // Registration handler
+        document.getElementById('registrationForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const schoolName = document.getElementById('schoolName').value.trim();
+            const adminName = document.getElementById('adminName').value.trim();
+            const phone = document.getElementById('adminPhone').value.trim();
+            const password = document.getElementById('masterPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const privacyConsent = document.getElementById('privacyConsent').checked;
+            
+            // Validation
+            if (!schoolName || !adminName || !phone || !password) {
+                showToast('Please fill in all required fields');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match!');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showToast('Password must be at least 6 characters long');
+                return;
+            }
+            
+            if (!privacyConsent) {
+                showToast('Please accept the privacy policy to continue');
+                return;
+            }
+            
+            // Disable button during processing
+            const registerBtn = document.getElementById('registerBtn');
+            registerBtn.disabled = true;
+            registerBtn.classList.add('btn-loading');
+            registerBtn.textContent = 'Creating Account...';
+            
+            // Simulate registration process
+            setTimeout(() => {
+                const adminAccount = {
+                    schoolName,
+                    adminName,
+                    phone,
+                    password,
+                    createdAt: new Date().toISOString()
+                };
+                
+                // Store admin account
+                localStorage.setItem('adminAccount', JSON.stringify(adminAccount));
+                
+                showToast('Admin account created successfully!');
+                
+                // Auto-login the new admin
+                currentUser = {
+                    phone: phone,
+                    role: 'admin',
+                    name: adminName,
+                    schoolName: schoolName
+                };
+                
+                // Reset form
+                document.getElementById('registrationForm').reset();
+                registerBtn.disabled = false;
+                registerBtn.classList.remove('btn-loading');
+                registerBtn.textContent = 'Create Admin Account';
+                
+                // Navigate to dashboard
+                setTimeout(() => {
+                    showScreen('adminDashboard');
+                    updateAdminStats();
+                }, 1000);
+            }, 1500);
+        });
+        
+        // Login handler
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const phone = document.getElementById('phoneInput').value.trim();
+            const code = document.getElementById('codeInput').value.trim();
+            
+            // Basic validation
+            if (!phone) {
+                showToast('Please enter your phone number');
+                return;
+            }
+            
+            if (!code) {
+                const codeType = currentRole === 'admin' ? 'master password' : 'access code';
+                showToast(`Please enter your ${codeType}`);
+                return;
+            }
+            
+            // Disable button during processing
+            const loginBtn = document.getElementById('loginBtn');
+            loginBtn.disabled = true;
+            loginBtn.classList.add('btn-loading');
+            loginBtn.textContent = 'Processing...';
+            
+            // Process login based on role
+            setTimeout(() => {
+                if (currentRole === 'admin') {
+                    handleAdminLogin(phone, code, loginBtn);
+                } else if (currentRole === 'teacher') {
+                    handleTeacherLogin(phone, code, loginBtn);
+                } else if (currentRole === 'parent') {
+                    handleParentLogin(phone, code, null, loginBtn);
+                }
+            }, 500);
+        });
+        
+        function handleAdminLogin(phone, password, loginBtn) {
+            const storedAdmin = JSON.parse(localStorage.getItem('adminAccount') || '{}');
+            
+            if (!storedAdmin.phone) {
+                showToast('No admin account found. Please register first.');
+                resetLoginButton(loginBtn);
+                return;
+            }
+            
+            if (storedAdmin.phone === phone && storedAdmin.password === password) {
+                currentUser = {
+                    phone: phone,
+                    role: 'admin',
+                    name: storedAdmin.adminName,
+                    schoolName: storedAdmin.schoolName
+                };
+                completeLogin(loginBtn);
+            } else {
+                showToast('Invalid phone number or password');
+                resetLoginButton(loginBtn);
+            }
+        }
+        
+        function handleTeacherLogin(phone, code, loginBtn) {
+            // Check if code exists in generated codes
+            const generatedCodes = JSON.parse(localStorage.getItem('generatedCodes') || '[]');
+            const codeRecord = generatedCodes.find(record => 
+                record.code === code.toUpperCase() && record.type === 'teacher'
+            );
+            
+            if (codeRecord) {
+                currentUser = {
+                    phone: phone,
+                    role: 'teacher',
+                    name: codeRecord.name,
+                    class: codeRecord.class || 'Not Assigned',
+                    accessCode: code
+                };
+                completeLogin(loginBtn);
+            } else {
+                showToast('Invalid access code. Please contact your admin.');
+                resetLoginButton(loginBtn);
+            }
+        }
+        
+        function handleParentLogin(phone, code, otpInput, loginBtn) {
+            // Direct login: validate access code only
+            const generatedCodes = JSON.parse(localStorage.getItem('generatedCodes') || '[]');
+            const codeRecord = generatedCodes.find(record => 
+                record.code === code.toUpperCase() && record.type === 'parent'
+            );
+            
+            if (codeRecord) {
+                currentUser = {
+                    phone: phone,
+                    role: 'parent',
+                    name: codeRecord.name,
+                    children: ['Adebayo Adebola', 'Adebayo Kemi'],
+                    accessCode: codeRecord.code
+                };
+                completeLogin(loginBtn);
+            } else {
+                showToast('Invalid access code. Please contact your admin.');
+                resetLoginButton(loginBtn);
+            }
+        }
+        
+        function resetLoginButton(loginBtn) {
+            loginBtn.disabled = false;
+            loginBtn.classList.remove('btn-loading');
+            loginBtn.textContent = 'Continue';
+        }
+        
+        function completeLogin(loginBtn) {
+            const dashboards = {
+                admin: 'adminDashboard',
+                teacher: 'teacherDashboard',
+                parent: 'parentDashboard'
+            };
+            
+            showToast('Login successful!');
+            
+            setTimeout(() => {
+                // Reset login form
+                document.getElementById('loginForm').reset();
+                resetLoginButton(loginBtn);
+                
+                // Update dashboard headers with user names
+                if (currentRole === 'teacher') {
+                    updateTeacherDashboard();
+                    const teacherInfo = document.getElementById('teacherInfo');
+                    if (teacherInfo && currentUser) {
+                        teacherInfo.textContent = `${currentUser.name} - ${currentUser.class}`;
+                    }
+                } else if (currentRole === 'parent') {
+                    const parentInfo = document.getElementById('parentInfo');
+                    if (parentInfo && currentUser) {
+                        parentInfo.textContent = `Welcome, ${currentUser.name}`;
+                    }
+                    loadParentMessages(); // Load messages when parent logs in
+                }
+                
+                showScreen(dashboards[currentRole]);
+            }, 1000);
+        }
+        
+        function updateAdminStats() {
+            // Update teacher count
+            const totalTeachersCount = document.getElementById('totalTeachersCount');
+            if (totalTeachersCount) {
+                const generatedCodes = JSON.parse(localStorage.getItem('generatedCodes') || '[]');
+                const teacherCodes = generatedCodes.filter(code => code.type === 'teacher');
+                totalTeachersCount.textContent = teacherCodes.length;
+            }
+            
+            // Update parent count
+            const totalParentsCount = document.getElementById('totalParentsCount');
+            if (totalParentsCount) {
+                const generatedCodes = JSON.parse(localStorage.getItem('generatedCodes') || '[]');
+                const parentCodes = generatedCodes.filter(code => code.type === 'parent');
+                totalParentsCount.textContent = parentCodes.length;
+            }
+            
+            // Update messages count
+            const totalMessagesCount = document.getElementById('totalMessagesCount');
+            if (totalMessagesCount) {
+                const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
+                totalMessagesCount.textContent = allMessages.length;
+            }
+            
+            // Load recent messages for admin dashboard
+            loadAdminRecentMessages();
+            
+            // Load recent activity
+            loadRecentActivity();
+        }
+        
+        function loadRecentActivity() {
+            const recentActivityList = document.getElementById('recentActivityList');
+            const noActivityState = document.getElementById('noActivityState');
+            
+            if (!recentActivityList || !noActivityState) return;
+            
+            const activities = JSON.parse(localStorage.getItem('recentActivities') || '[]');
+            
+            if (activities.length === 0) {
+                recentActivityList.innerHTML = '';
+                noActivityState.classList.remove('hidden');
+                return;
+            }
+            
+            noActivityState.classList.add('hidden');
+            
+            // Show recent 5 activities
+            const recentActivities = activities.slice(0, 5);
+            
+            recentActivityList.innerHTML = recentActivities.map(activity => {
+                const timeAgo = getTimeAgo(new Date(activity.timestamp));
+                return `
+                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                        <span class="text-sm">${activity.description}</span>
+                        <span class="text-xs text-gray-500">${timeAgo}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function addActivity(description) {
+            const activities = JSON.parse(localStorage.getItem('recentActivities') || '[]');
+            const newActivity = {
+                id: Date.now().toString(),
+                description: description,
+                timestamp: new Date().toISOString()
+            };
+            
+            activities.unshift(newActivity); // Add to beginning
+            
+            // Keep only last 20 activities
+            if (activities.length > 20) {
+                activities.splice(20);
+            }
+            
+            localStorage.setItem('recentActivities', JSON.stringify(activities));
+        }
+        
+        function loadAdminRecentMessages() {
+            const adminRecentMessages = document.getElementById('adminRecentMessages');
+            const adminNoMessages = document.getElementById('adminNoMessages');
+            
+            if (!adminRecentMessages || !adminNoMessages) return;
+            
+            const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
+            
+            if (allMessages.length === 0) {
+                adminRecentMessages.innerHTML = '';
+                adminNoMessages.classList.remove('hidden');
+                return;
+            }
+            
+            adminNoMessages.classList.add('hidden');
+            
+            // Show recent 3 messages
+            const recentMessages = allMessages.slice(0, 3);
+            
+            adminRecentMessages.innerHTML = recentMessages.map(msg => {
+                const timeAgo = getTimeAgo(new Date(msg.timestamp));
+                const hasReplies = msg.replies.length > 0;
+                const replyIndicator = hasReplies ? `<span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full ml-2">${msg.replies.length} ${msg.replies.length === 1 ? 'reply' : 'replies'}</span>` : '';
+                
+                return `
+                    <div class="bg-white border rounded-lg p-3">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span class="font-medium text-gray-800">${msg.teacherName}</span>
+                                <p class="text-xs text-gray-500">${msg.teacherClass} → ${msg.parentName}</p>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-xs text-gray-500">${timeAgo}</span>
+                                ${replyIndicator}
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-1">About: ${msg.studentName}</p>
+                        <p class="text-sm text-gray-700">${msg.message.substring(0, 60)}${msg.message.length > 60 ? '...' : ''}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function showAdminMessages() {
+            loadAdminAllMessages();
+            showScreen('adminMessagesScreen');
+        }
+        
+        function loadAdminAllMessages(filter = 'all') {
+            const adminAllMessages = document.getElementById('adminAllMessages');
+            const adminMessagesEmpty = document.getElementById('adminMessagesEmpty');
+            
+            if (!adminAllMessages || !adminMessagesEmpty) return;
+            
+            let allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
+            
+            // Apply filters
+            if (filter === 'today') {
+                const today = new Date().toDateString();
+                allMessages = allMessages.filter(msg => 
+                    new Date(msg.timestamp).toDateString() === today
+                );
+            } else if (filter === 'health') {
+                allMessages = allMessages.filter(msg => 
+                    msg.tags.some(tag => tag.includes('health'))
+                );
+            } else if (filter === 'homework') {
+                allMessages = allMessages.filter(msg => 
+                    msg.tags.some(tag => tag.includes('homework'))
+                );
+            } else if (filter === 'behavior') {
+                allMessages = allMessages.filter(msg => 
+                    msg.tags.some(tag => tag.includes('behavior'))
+                );
+            }
+            
+            if (allMessages.length === 0) {
+                adminAllMessages.innerHTML = '';
+                adminMessagesEmpty.classList.remove('hidden');
+                return;
+            }
+            
+            adminMessagesEmpty.classList.add('hidden');
+            
+            adminAllMessages.innerHTML = allMessages.map(msg => {
+                const timeAgo = getTimeAgo(new Date(msg.timestamp));
+                const tagsHtml = msg.tags.map(tag => {
+                    const tagInfo = getTagInfo(tag);
+                    return `<span class="bg-${tagInfo.color}-100 text-${tagInfo.color}-800 text-xs px-2 py-1 rounded-full">${tagInfo.label}</span>`;
+                }).join('');
+                
+                const repliesHtml = msg.replies.length > 0 ? `
+                    <div class="mt-3 pt-3 border-t border-gray-100">
+                        <h4 class="text-sm font-medium text-gray-700 mb-2">Parent Replies (${msg.replies.length})</h4>
+                        ${msg.replies.map(reply => `
+                            <div class="bg-green-50 rounded-lg p-2 mb-2">
+                                <div class="flex justify-between items-start mb-1">
+                                    <span class="text-sm font-medium text-gray-800">${reply.senderName}</span>
+                                    <span class="text-xs text-gray-500">${getTimeAgo(new Date(reply.timestamp))}</span>
+                                </div>
+                                <p class="text-sm text-gray-700">${reply.message}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : '';
+                
+                return `
+                    <div class="bg-white card-shadow rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span class="font-medium text-gray-800">${msg.teacherName}</span>
+                                <p class="text-xs text-gray-500">${msg.teacherClass} • To: ${msg.parentName} (${msg.parentPhone})</p>
+                            </div>
+                            <span class="text-xs text-gray-500">${timeAgo}</span>
+                        </div>
+                        <p class="text-sm font-medium text-gray-700 mb-2">Student: ${msg.studentName}</p>
+                        ${tagsHtml ? `<div class="flex flex-wrap gap-1 mb-3">${tagsHtml}</div>` : ''}
+                        <p class="text-gray-700 mb-2">${msg.message}</p>
+                        ${repliesHtml}
+                        ${msg.replies.length === 0 ? '<p class="text-xs text-gray-500 italic">No parent replies yet</p>' : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function filterAdminMessages(filter) {
+            // Update filter button styles
+            document.querySelectorAll('.admin-filter-btn').forEach(btn => {
+                btn.classList.remove('bg-purple-600', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            
+            event.target.classList.remove('bg-gray-200', 'text-gray-700');
+            event.target.classList.add('bg-purple-600', 'text-white');
+            
+            // Load filtered messages
+            loadAdminAllMessages(filter);
+        }
+        
+        function showSettings() {
+            showScreen('settingsScreen');
+        }
+        
+        function showCompose() {
+            populateStudentSelect();
+            showScreen('composeScreen');
+        }
+        
+        function showStudentManagement() {
+            setupStudentManagementScreen();
+            renderStudentsList();
+            showScreen('studentManagementScreen');
+        }
+        
+        function setupStudentManagementScreen() {
+            const adminClassSelector = document.getElementById('adminClassSelector');
+            const assignClassSelect = document.getElementById('assignClassSelect');
+            
+            if (currentUser && currentUser.role === 'admin' && adminClassSelector && assignClassSelect) {
+                // Show class selector for admin
+                adminClassSelector.classList.remove('hidden');
+                
+                // Populate with available classes from generated teacher codes
+                const generatedCodes = JSON.parse(localStorage.getItem('generatedCodes') || '[]');
+                const teacherClasses = generatedCodes
+                    .filter(code => code.type === 'teacher' && code.class)
+                    .map(code => code.class);
+                
+                // Remove duplicates
+                const uniqueClasses = [...new Set(teacherClasses)];
+                
+                assignClassSelect.innerHTML = '<option value="">Assign to Class (Optional)</option>';
+                uniqueClasses.forEach(className => {
+                    const option = document.createElement('option');
+                    option.value = className;
+                    option.textContent = className;
+                    assignClassSelect.appendChild(option);
+                });
+            } else if (adminClassSelector) {
+                // Hide class selector for teachers
+                adminClassSelector.classList.add('hidden');
+            }
+        }
+        
+        // Navigation stack to track screen history
+        let navigationStack = [];
+        
+        function pushToStack(screenId) {
+            navigationStack.push(screenId);
+        }
+        
+        function goBack() {
+            // If we have a navigation stack, go to previous screen
+            if (navigationStack.length > 1) {
+                navigationStack.pop(); // Remove current screen
+                const previousScreen = navigationStack[navigationStack.length - 1];
+                showScreen(previousScreen);
+                return;
+            }
+            
+            // Fallback to role-based navigation
+            if (currentRole) {
+                const dashboards = {
+                    admin: 'adminDashboard',
+                    teacher: 'teacherDashboard',
+                    parent: 'parentDashboard'
+                };
+                
+                // Update teacher dashboard when returning
+                if (currentRole === 'teacher') {
+                    updateTeacherDashboard();
+                }
+                
+                showScreen(dashboards[currentRole]);
+            }
+        }
+        
+        // Enhanced showScreen function to track navigation
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+            
+            // Add to navigation stack if it's a new screen
+            if (navigationStack.length === 0 || navigationStack[navigationStack.length - 1] !== screenId) {
+                pushToStack(screenId);
+            }
+        }
+        
+        function updateTeacherDashboard() {
+            const dashboardStudentList = document.getElementById('dashboardStudentList');
+            const dashboardEmptyState = document.getElementById('dashboardEmptyState');
+            const dashboardStudentCount = document.getElementById('dashboardStudentCount');
+            
+            if (!dashboardStudentList || !dashboardEmptyState || !dashboardStudentCount) return;
+            
+            // Get only students in teacher's class
+            const teacherStudents = getTeacherStudents();
+            dashboardStudentCount.textContent = teacherStudents.length;
+            
+            if (teacherStudents.length === 0) {
+                dashboardStudentList.innerHTML = '';
+                dashboardEmptyState.classList.remove('hidden');
+                return;
+            }
+            
+            dashboardEmptyState.classList.add('hidden');
+            
+            const colors = ['purple', 'green', 'orange', 'blue', 'red', 'indigo'];
+            
+            dashboardStudentList.innerHTML = teacherStudents.map((student, index) => {
+                const color = colors[index % colors.length];
+                return `
+                    <div class="bg-white card-shadow rounded-lg p-3 flex justify-between items-center">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-${color}-100 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-sm font-semibold text-${color}-600">${student.firstName.charAt(0)}${student.lastName.charAt(0)}</span>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-800">${student.fullName}</p>
+                                <p class="text-sm text-gray-500">Last update: No updates yet</p>
+                            </div>
+                        </div>
+                        <button onclick="sendQuickUpdate('${student.id}')" class="text-blue-600 hover:bg-blue-50 p-2 rounded">📝</button>
+                    </div>
+                `;
+            }).join('');
+            
+            // Update recent messages section
+            loadTeacherRecentMessages();
+        }
+        
+        function loadTeacherRecentMessages() {
+            const teacherRecentMessages = document.getElementById('teacherRecentMessages');
+            const teacherNoMessages = document.getElementById('teacherNoMessages');
+            
+            if (!teacherRecentMessages || !teacherNoMessages) return;
+            
+            const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
+            
+            // Filter messages sent by current teacher
+            const teacherMessages = allMessages.filter(msg => 
+                currentUser && msg.teacherName === currentUser.name
+            ).slice(0, 3); // Show only recent 3
+            
+            if (teacherMessages.length === 0) {
+                teacherRecentMessages.innerHTML = '';
+                teacherNoMessages.classList.remove('hidden');
+                return;
+            }
+            
+            teacherNoMessages.classList.add('hidden');
+            
+            teacherRecentMessages.innerHTML = teacherMessages.map(msg => {
+                const timeAgo = getTimeAgo(new Date(msg.timestamp));
+                const hasReplies = msg.replies.length > 0;
+                const replyIndicator = hasReplies ? `<span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full ml-2">${msg.replies.length} ${msg.replies.length === 1 ? 'reply' : 'replies'}</span>` : '';
+                
+                return `
+                    <div class="bg-white card-shadow rounded-lg p-3">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="font-medium text-gray-800">${msg.studentName}</span>
+                            <div class="flex items-center">
+                                <span class="text-xs text-gray-500">${timeAgo}</span>
+                                ${replyIndicator}
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-2">${msg.message.substring(0, 80)}${msg.message.length > 80 ? '...' : ''}</p>
+                        ${hasReplies ? `<p class="text-xs text-green-600">Latest reply from ${msg.replies[msg.replies.length - 1].senderName}</p>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function showTeacherInbox() {
+            loadTeacherInboxMessages();
+            showScreen('teacherInboxScreen');
+        }
+        
+        function loadTeacherInboxMessages() {
+            const teacherInboxMessages = document.getElementById('teacherInboxMessages');
+            const teacherInboxEmpty = document.getElementById('teacherInboxEmpty');
+            
+            if (!teacherInboxMessages || !teacherInboxEmpty) return;
+            
+            const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
+            
+            // Filter messages sent by current teacher
+            const teacherMessages = allMessages.filter(msg => 
+                currentUser && msg.teacherName === currentUser.name
+            );
+            
+            if (teacherMessages.length === 0) {
+                teacherInboxMessages.innerHTML = '';
+                teacherInboxEmpty.classList.remove('hidden');
+                return;
+            }
+            
+            teacherInboxEmpty.classList.add('hidden');
+            
+            teacherInboxMessages.innerHTML = teacherMessages.map(msg => {
+                const timeAgo = getTimeAgo(new Date(msg.timestamp));
+                const tagsHtml = msg.tags.map(tag => {
+                    const tagInfo = getTagInfo(tag);
+                    return `<span class="bg-${tagInfo.color}-100 text-${tagInfo.color}-800 text-xs px-2 py-1 rounded-full">${tagInfo.label}</span>`;
+                }).join('');
+                
+                const repliesHtml = msg.replies.length > 0 ? `
+                    <div class="mt-3 pt-3 border-t border-gray-100">
+                        <h4 class="text-sm font-medium text-gray-700 mb-2">Replies from ${msg.parentName} (${msg.replies.length})</h4>
+                        ${msg.replies.map(reply => `
+                            <div class="bg-green-50 rounded-lg p-2 mb-2">
+                                <div class="flex justify-between items-start mb-1">
+                                    <span class="text-sm font-medium text-gray-800">${reply.senderName}</span>
+                                    <span class="text-xs text-gray-500">${getTimeAgo(new Date(reply.timestamp))}</span>
+                                </div>
+                                <p class="text-sm text-gray-700">${reply.message}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : '';
+                
+                return `
+                    <div class="bg-white card-shadow rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span class="font-medium text-gray-800">${msg.studentName}</span>
+                                <p class="text-xs text-gray-500">To: ${msg.parentName} • ${msg.parentPhone}</p>
+                            </div>
+                            <span class="text-xs text-gray-500">${timeAgo}</span>
+                        </div>
+                        ${tagsHtml ? `<div class="flex flex-wrap gap-1 mb-3">${tagsHtml}</div>` : ''}
+                        <p class="text-gray-700 mb-2">${msg.message}</p>
+                        ${repliesHtml}
+                        ${msg.replies.length === 0 ? '<p class="text-xs text-gray-500 italic">No replies yet</p>' : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Admin functions
+        function generateCode(type) {
+            const nameInputId = type === 'teacher' ? 'teacherNameInput' : 'parentNameInput';
+            const nameInput = document.getElementById(nameInputId);
+            const userName = nameInput.value.trim();
+            
+            if (!userName) {
+                showToast(`Please enter the ${type}'s full name first`);
+                nameInput.focus();
+                return;
+            }
+            
+            let userClass = '';
+            if (type === 'teacher') {
+                const classInput = document.getElementById('teacherClassInput');
+                userClass = classInput.value.trim();
+                
+                if (!userClass) {
+                    showToast('Please enter the teacher\'s class/grade');
+                    classInput.focus();
+                    return;
+                }
+            }
+            
+            const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+            document.getElementById('codeDisplay').textContent = code;
+            
+            const displayName = type === 'teacher' && userClass ? `${userName} (${userClass})` : userName;
+            document.getElementById('codeUserName').textContent = displayName;
+            document.getElementById('generatedCode').classList.remove('hidden');
+            
+            // Store the generated code with user info
+            const generatedCodes = JSON.parse(localStorage.getItem('generatedCodes') || '[]');
+            const codeRecord = {
+                code: code,
+                name: userName,
+                type: type,
+                generatedAt: new Date().toISOString()
+            };
+            
+            if (type === 'teacher') {
+                codeRecord.class = userClass;
+            }
+            
+            generatedCodes.push(codeRecord);
+            localStorage.setItem('generatedCodes', JSON.stringify(generatedCodes));
+            
+            // Add to recent activity
+            const activityDescription = type === 'teacher' 
+                ? `Teacher code generated for ${displayName}`
+                : `Parent code generated for ${userName}`;
+            addActivity(activityDescription);
+            
+            showToast(`${type} code generated for ${displayName}: ${code}`);
+            
+            // Update admin stats
+            if (currentUser && currentUser.role === 'admin') {
+                updateAdminStats();
+            }
+            
+            // Clear the inputs
+            nameInput.value = '';
+            if (type === 'teacher') {
+                document.getElementById('teacherClassInput').value = '';
+            }
+        }
+        
+        function copyCode() {
+            const code = document.getElementById('codeDisplay').textContent;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(code).then(() => {
+                    showToast('Code copied to clipboard!');
+                });
+            } else {
+                // Fallback for older browsers
+                showToast(`Code: ${code}`);
+            }
+        }
+        
+        function sendBroadcast() {
+            const message = document.getElementById('broadcastMessage').value.trim();
+            if (message) {
+                const generatedCodes = JSON.parse(localStorage.getItem('generatedCodes') || '[]');
+                const parentCount = generatedCodes.filter(code => code.type === 'parent').length;
+                
+                // Add to recent activity
+                addActivity(`Broadcast sent to ${parentCount} parents`);
+                
+                showToast('Broadcast sent to all parents!');
+                document.getElementById('broadcastMessage').value = '';
+                updateCharCount('broadcastMessage', 'charCount');
+                
+                // Update admin stats
+                if (currentUser && currentUser.role === 'admin') {
+                    updateAdminStats();
+                }
+            } else {
+                showToast('Please enter a message to broadcast');
+            }
+        }
+        
+        // Teacher functions
+        function sendQuickUpdate(studentId) {
+            showCompose();
+            // Set the selected student in the dropdown
+            const studentSelect = document.getElementById('studentSelect');
+            if (studentSelect) {
+                studentSelect.value = studentId;
+            }
+        }
+        
+        function toggleTag(tagId) {
+            const button = event.target;
+            const isSelected = selectedTags.includes(tagId);
+            
+            if (isSelected) {
+                selectedTags = selectedTags.filter(tag => tag !== tagId);
+                button.classList.remove('bg-blue-100', 'text-blue-700');
+                button.classList.add('bg-gray-100', 'text-gray-700');
+            } else {
+                selectedTags.push(tagId);
+                button.classList.remove('bg-gray-100', 'text-gray-700');
+                button.classList.add('bg-blue-100', 'text-blue-700');
+            }
+        }
+        
+        // Compose form handler
+        document.getElementById('composeForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const studentId = document.getElementById('studentSelect').value;
+            const message = document.getElementById('messageText').value.trim();
+            
+            if (!studentId) {
+                showToast('Please select a student');
+                return;
+            }
+            
+            if (!message && selectedTags.length === 0) {
+                showToast('Please add a message or select tags');
+                return;
+            }
+            
+            // Find the student
+            const student = classStudents.find(s => s.id === studentId);
+            if (!student) {
+                showToast('Student not found');
+                return;
+            }
+            
+            // Create message object
+            const messageObj = {
+                id: Date.now().toString(),
+                studentId: studentId,
+                studentName: student.fullName,
+                parentName: student.parentName,
+                parentPhone: student.parentPhone,
+                teacherName: currentUser.name,
+                teacherClass: currentUser.class,
+                message: message,
+                tags: [...selectedTags],
+                timestamp: new Date().toISOString(),
+                replies: []
+            };
+            
+            // Store message in localStorage
+            const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+            messages.unshift(messageObj); // Add to beginning for newest first
+            localStorage.setItem('messages', JSON.stringify(messages));
+            
+            showToast(`Message sent to ${student.parentName}!`);
+            
+            // Reset form
+            document.getElementById('composeForm').reset();
+            selectedTags = [];
+            document.querySelectorAll('.tag-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-100', 'text-blue-700');
+                btn.classList.add('bg-gray-100', 'text-gray-700');
+            });
+            
+            setTimeout(() => {
+                goBack();
+            }, 1000);
+        });
+        
+        function saveDraft() {
+            const draft = {
+                student: document.getElementById('studentSelect').value,
+                message: document.getElementById('messageText').value,
+                tags: [...selectedTags],
+                timestamp: new Date().toISOString()
+            };
+            drafts.push(draft);
+            localStorage.setItem('drafts', JSON.stringify(drafts));
+            showToast('Draft saved for offline!');
+        }
+        
+        // Parent functions
+        function switchChild() {
+            const child = document.getElementById('childSelector').value;
+            const childName = child === 'adebola' ? 'Adebola' : 'Kemi';
+            showToast(`Switched to ${childName}'s updates`);
+            loadParentMessages(); // Reload messages for selected child
+        }
+        
+        function loadParentMessages() {
+            const messagesFeed = document.getElementById('messagesFeed');
+            const noMessagesState = document.getElementById('noMessagesState');
+            
+            if (!messagesFeed || !noMessagesState) return;
+            
+            const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
+            
+            // Filter messages for current parent (based on access code)
+            const parentMessages = allMessages.filter(msg => {
+                // For demo, we'll show all messages. In real app, filter by parent's access code
+                return true;
+            });
+            
+            if (parentMessages.length === 0) {
+                messagesFeed.innerHTML = '';
+                noMessagesState.classList.remove('hidden');
+                return;
+            }
+            
+            noMessagesState.classList.add('hidden');
+            
+            messagesFeed.innerHTML = parentMessages.map(msg => {
+                const timeAgo = getTimeAgo(new Date(msg.timestamp));
+                const teacherInitials = msg.teacherName.split(' ').map(n => n.charAt(0)).join('');
+                
+                const tagsHtml = msg.tags.map(tag => {
+                    const tagInfo = getTagInfo(tag);
+                    return `<span class="bg-${tagInfo.color}-100 text-${tagInfo.color}-800 text-xs px-2 py-1 rounded-full">${tagInfo.label}</span>`;
+                }).join('');
+                
+                const repliesHtml = msg.replies.length > 0 ? `
+                    <div class="mt-3 pt-3 border-t border-gray-100">
+                        <h4 class="text-sm font-medium text-gray-700 mb-2">Replies (${msg.replies.length})</h4>
+                        ${msg.replies.map(reply => `
+                            <div class="bg-gray-50 rounded-lg p-2 mb-2">
+                                <div class="flex justify-between items-start mb-1">
+                                    <span class="text-sm font-medium text-gray-800">${reply.senderName}</span>
+                                    <span class="text-xs text-gray-500">${getTimeAgo(new Date(reply.timestamp))}</span>
+                                </div>
+                                <p class="text-sm text-gray-700">${reply.message}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : '';
+                
+                return `
+                    <div class="message-bubble bg-white card-shadow rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                                    <span class="text-xs font-semibold text-blue-600">${teacherInitials}</span>
+                                </div>
+                                <div>
+                                    <span class="font-medium text-gray-800">${msg.teacherName}</span>
+                                    <p class="text-xs text-gray-500">${msg.teacherClass} • About ${msg.studentName}</p>
+                                </div>
+                            </div>
+                            <span class="text-xs text-gray-500">${timeAgo}</span>
+                        </div>
+                        ${tagsHtml ? `<div class="flex flex-wrap gap-1 mb-3">${tagsHtml}</div>` : ''}
+                        <p class="text-gray-700 mb-3">${msg.message}</p>
+                        ${repliesHtml}
+                        <button onclick="replyToMessage('${msg.id}')" class="text-green-600 text-sm hover:underline">Reply</button>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function replyToMessage(messageId) {
+            const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
+            const message = allMessages.find(msg => msg.id === messageId);
+            
+            if (!message) {
+                showToast('Message not found');
+                return;
+            }
+            
+            // Store current message for reply
+            window.currentReplyMessage = message;
+            
+            // Update reply screen
+            document.getElementById('replyToTeacher').textContent = message.teacherName;
+            
+            // Show original message
+            const originalMessage = document.getElementById('originalMessage');
+            const timeAgo = getTimeAgo(new Date(message.timestamp));
+            const tagsHtml = message.tags.map(tag => {
+                const tagInfo = getTagInfo(tag);
+                return `<span class="bg-${tagInfo.color}-100 text-${tagInfo.color}-800 text-xs px-2 py-1 rounded-full">${tagInfo.label}</span>`;
+            }).join('');
+            
+            originalMessage.innerHTML = `
+                <div class="flex justify-between items-start mb-2">
+                    <span class="font-medium text-gray-800">${message.teacherName}</span>
+                    <span class="text-xs text-gray-500">${timeAgo}</span>
+                </div>
+                ${tagsHtml ? `<div class="flex flex-wrap gap-1 mb-2">${tagsHtml}</div>` : ''}
+                <p class="text-gray-700">${message.message}</p>
+            `;
+            
+            // Clear reply form
+            document.getElementById('replyText').value = '';
+            updateCharCount('replyText', 'replyCharCount');
+            
+            showScreen('replyScreen');
+        }
+        
+        function getTagInfo(tag) {
+            const tagMap = {
+                'health-good': { label: '😊 Good Health', color: 'green' },
+                'health-concern': { label: '🤒 Health Concern', color: 'yellow' },
+                'homework-done': { label: '✅ Homework Complete', color: 'blue' },
+                'homework-missing': { label: '❌ Homework Missing', color: 'red' },
+                'behavior-excellent': { label: '⭐ Excellent Behavior', color: 'purple' },
+                'behavior-concern': { label: '⚠️ Behavior Concern', color: 'orange' }
+            };
+            return tagMap[tag] || { label: tag, color: 'gray' };
+        }
+        
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+            
+            if (diffInMinutes < 1) return 'Just now';
+            if (diffInMinutes < 60) return `${diffInMinutes} min ago`;
+            
+            const diffInHours = Math.floor(diffInMinutes / 60);
+            if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+            
+            const diffInDays = Math.floor(diffInHours / 24);
+            if (diffInDays < 7) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+            
+            return date.toLocaleDateString();
+        }
+        
+        // Template functions
+        function useTemplate() {
+            document.getElementById('templateModal').classList.remove('hidden');
+        }
+        
+        function selectTemplate(type) {
+            const template = templates[type];
+            if (template) {
+                document.getElementById('messageText').value = template.full;
+                updateCharCount('messageText', 'messageCharCount');
+            }
+            closeTemplateModal();
+        }
+        
+        function closeTemplateModal() {
+            document.getElementById('templateModal').classList.add('hidden');
+        }
+        
+        // Utility functions
+        function updateCharCount(textareaId, counterId) {
+            const textarea = document.getElementById(textareaId);
+            const counter = document.getElementById(counterId);
+            if (textarea && counter) {
+                const count = textarea.value.length;
+                counter.textContent = `${count}/160 characters`;
+                
+                if (count > 160) {
+                    counter.classList.add('text-red-500');
+                } else {
+                    counter.classList.remove('text-red-500');
+                }
+            }
+        }
+        
+        function showToast(message) {
+            const toast = document.getElementById('successToast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            if (toast && toastMessage) {
+                toastMessage.textContent = message;
+                toast.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    toast.classList.add('hidden');
+                }, 3000);
+            }
+        }
+        
+        function toggleLowDataMode() {
+            const isEnabled = document.getElementById('lowDataToggle').checked;
+            if (isEnabled) {
+                document.body.classList.add('low-data-mode');
+                showToast('Low data mode enabled');
+            } else {
+                document.body.classList.remove('low-data-mode');
+                showToast('Low data mode disabled');
+            }
+        }
+        
+        function showPrivacyInfo() {
+            alert('Privacy Policy: We collect minimal personal information and only use it to facilitate parent-teacher communication. Your data is never shared with third parties and is stored securely.');
+        }
+        
+        function logout() {
+            currentUser = null;
+            currentRole = null;
+            showScreen('splashScreen');
+            showToast('Logged out successfully');
+        }
+        
+        // Cloud sync UI functions
+        function showCloudSetup() {
+            // Pre-fill if already configured
+            if (JSONBIN_CONFIG.binId) {
+                document.getElementById('binIdInput').value = JSONBIN_CONFIG.binId;
+            }
+            document.getElementById('cloudSetupModal').classList.remove('hidden');
+        }
+        
+        function closeCloudSetupModal() {
+            document.getElementById('cloudSetupModal').classList.add('hidden');
+        }
+        
+        function showStarterData() {
+            const starterDataContent = document.getElementById('starterDataContent');
+            starterDataContent.textContent = JSON.stringify(STARTER_DATA, null, 2);
+            document.getElementById('starterDataModal').classList.remove('hidden');
+        }
+        
+        function closeStarterDataModal() {
+            document.getElementById('starterDataModal').classList.add('hidden');
+        }
+        
+        function copyStarterData() {
+            const starterDataText = JSON.stringify(STARTER_DATA, null, 2);
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(starterDataText).then(() => {
+                    showToast('📋 Starter data copied to clipboard!');
+                    closeStarterDataModal();
+                });
+            } else {
+                // Fallback for older browsers
+                showToast('Copy the JSON manually from the text area');
+            }
+        }
+        
+        async function manualSync() {
+            if (!JSONBIN_CONFIG.binId || !JSONBIN_CONFIG.apiKey) {
+                showToast('Please setup cloud sync first');
+                showCloudSetup();
+                return;
+            }
+            
+            showToast('🔄 Syncing...');
+            const success = await syncToCloud();
+            
+            if (success) {
+                updateLastSyncInfo();
+            }
+        }
+        
+        function toggleAutoSync() {
+            const isEnabled = document.getElementById('autoSyncToggle').checked;
+            localStorage.setItem('autoSyncEnabled', isEnabled.toString());
+            
+            if (isEnabled && (!JSONBIN_CONFIG.binId || !JSONBIN_CONFIG.apiKey)) {
+                showToast('Please setup cloud sync first');
+                document.getElementById('autoSyncToggle').checked = false;
+                showCloudSetup();
+                return;
+            }
+            
+            showToast(isEnabled ? '✅ Auto sync enabled' : '❌ Auto sync disabled');
+        }
+        
+        function updateLastSyncInfo() {
+            const lastSync = localStorage.getItem('lastCloudSync');
+            const lastSyncInfo = document.getElementById('lastSyncInfo');
+            
+            if (lastSyncInfo) {
+                if (lastSync) {
+                    const syncDate = new Date(lastSync);
+                    const timeAgo = getTimeAgo(syncDate);
+                    lastSyncInfo.textContent = `Last sync: ${timeAgo}`;
+                } else {
+                    lastSyncInfo.textContent = 'Last sync: Never';
+                }
+            }
+        }
+        
+        function exportData() {
+            const data = {
+                adminAccount: JSON.parse(localStorage.getItem('adminAccount') || 'null'),
+                generatedCodes: JSON.parse(localStorage.getItem('generatedCodes') || '[]'),
+                classStudents: JSON.parse(localStorage.getItem('classStudents') || '[]'),
+                messages: JSON.parse(localStorage.getItem('messages') || '[]'),
+                drafts: JSON.parse(localStorage.getItem('drafts') || '[]'),
+                schoolSettings: JSON.parse(localStorage.getItem('schoolSettings') || JSON.stringify(STARTER_DATA.schoolSettings)),
+                exportedAt: new Date().toISOString(),
+                version: "1.0"
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `brainy-hive-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showToast('📁 Data exported successfully');
+        }
+        
+        // Reply form handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const replyForm = document.getElementById('replyForm');
+            if (replyForm) {
+                replyForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    
+                    const replyText = document.getElementById('replyText').value.trim();
+                    
+                    if (!replyText) {
+                        showToast('Please enter a reply message');
+                        return;
+                    }
+                    
+                    if (!window.currentReplyMessage) {
+                        showToast('Original message not found');
+                        return;
+                    }
+                    
+                    // Create reply object
+                    const reply = {
+                        id: Date.now().toString(),
+                        messageId: window.currentReplyMessage.id,
+                        senderName: currentUser.name,
+                        senderRole: currentUser.role,
+                        message: replyText,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    // Add reply to original message
+                    const allMessages = JSON.parse(localStorage.getItem('messages') || '[]');
+                    const messageIndex = allMessages.findIndex(msg => msg.id === window.currentReplyMessage.id);
+                    
+                    if (messageIndex !== -1) {
+                        allMessages[messageIndex].replies.push(reply);
+                        localStorage.setItem('messages', JSON.stringify(allMessages));
+                        
+                        showToast(`Reply sent to ${window.currentReplyMessage.teacherName}!`);
+                        
+                        // Reset form
+                        document.getElementById('replyText').value = '';
+                        updateCharCount('replyText', 'replyCharCount');
+                        
+                        // Go back to parent dashboard and refresh messages
+                        setTimeout(() => {
+                            showScreen('parentDashboard');
+                            loadParentMessages();
+                        }, 1000);
+                    } else {
+                        showToast('Error sending reply. Please try again.');
+                    }
+                });
+            }
+        });
+        
+        // Event listeners for character counting and cloud setup
+        document.addEventListener('DOMContentLoaded', function() {
+            const broadcastMessage = document.getElementById('broadcastMessage');
+            const messageText = document.getElementById('messageText');
+            const replyText = document.getElementById('replyText');
+            
+            if (broadcastMessage) {
+                broadcastMessage.addEventListener('input', () => {
+                    updateCharCount('broadcastMessage', 'charCount');
+                });
+            }
+            
+            if (messageText) {
+                messageText.addEventListener('input', () => {
+                    updateCharCount('messageText', 'messageCharCount');
+                });
+            }
+            
+            if (replyText) {
+                replyText.addEventListener('input', () => {
+                    updateCharCount('replyText', 'replyCharCount');
+                });
+            }
+            
+            // Cloud setup form handler
+            const cloudSetupForm = document.getElementById('cloudSetupForm');
+            if (cloudSetupForm) {
+                cloudSetupForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    
+                    const binId = document.getElementById('binIdInput').value.trim();
+                    const apiKey = document.getElementById('apiKeyInput').value.trim();
+                    
+                    if (!binId || !apiKey) {
+                        showToast('Please enter both Bin ID and API Key');
+                        return;
+                    }
+                    
+                    // Store credentials securely
+                    localStorage.setItem('cloudBinId', binId);
+                    localStorage.setItem('cloudApiKey', apiKey);
+                    
+                    // Setup cloud sync
+                    setupCloudSync(binId, apiKey);
+                    
+                    // Close modal
+                    closeCloudSetupModal();
+                    
+                    // Enable auto sync by default
+                    document.getElementById('autoSyncToggle').checked = true;
+                    localStorage.setItem('autoSyncEnabled', 'true');
+                    
+                    // Initial sync
+                    setTimeout(() => {
+                        manualSync();
+                    }, 1000);
+                });
+            }
+            
+            // Load saved cloud settings or use built-in credentials
+            const savedBinId = localStorage.getItem('cloudBinId') || JSONBIN_CONFIG.binId;
+            const savedApiKey = localStorage.getItem('cloudApiKey') || JSONBIN_CONFIG.apiKey;
+            const autoSyncEnabled = localStorage.getItem('autoSyncEnabled') !== 'false'; // Default to true
+            
+            if (savedBinId && savedApiKey) {
+                setupCloudSync(savedBinId, savedApiKey);
+                document.getElementById('autoSyncToggle').checked = autoSyncEnabled;
+                
+                // Store the built-in credentials if not already stored
+                if (!localStorage.getItem('cloudBinId')) {
+                    localStorage.setItem('cloudBinId', JSONBIN_CONFIG.binId);
+                    localStorage.setItem('cloudApiKey', JSONBIN_CONFIG.apiKey);
+                    localStorage.setItem('autoSyncEnabled', 'true');
+                }
+            }
+            
+            // Update last sync info
+            updateLastSyncInfo();
+        });
+        
+        // Offline detection
+        window.addEventListener('online', () => {
+            isOffline = false;
+            const indicator = document.getElementById('offlineIndicator');
+            if (indicator) {
+                indicator.style.display = 'none';
+            }
+            showToast('Back online! Syncing drafts...');
+        });
+        
+        window.addEventListener('offline', () => {
+            isOffline = true;
+            const indicator = document.getElementById('offlineIndicator');
+            if (indicator) {
+                indicator.style.display = 'block';
+            }
+            showToast('You are offline. Messages will be saved as drafts.');
+        });
+        
+        // Student Management Functions
+        function addStudent(firstName, lastName, parentName, parentPhone, teacherClass = null) {
+            const student = {
+                id: Date.now().toString(),
+                firstName: firstName.trim(),
+                lastName: lastName.trim(),
+                fullName: `${firstName.trim()} ${lastName.trim()}`,
+                parentName: parentName.trim(),
+                parentPhone: parentPhone.trim(),
+                teacherClass: teacherClass || (currentUser && currentUser.role === 'teacher' ? currentUser.class : null),
+                addedAt: new Date().toISOString()
+            };
+            
+            classStudents.push(student);
+            localStorage.setItem('classStudents', JSON.stringify(classStudents));
+            return student;
+        }
+        
+        function removeStudent(studentId) {
+            classStudents = classStudents.filter(student => student.id !== studentId);
+            localStorage.setItem('classStudents', JSON.stringify(classStudents));
+        }
+        
+        function renderStudentsList() {
+            const studentsList = document.getElementById('studentsList');
+            const emptyState = document.getElementById('emptyState');
+            const studentCount = document.getElementById('studentCount');
+            
+            if (!studentsList || !emptyState || !studentCount) return;
+            
+            // Get students based on user role
+            const studentsToShow = currentUser && currentUser.role === 'teacher' ? getTeacherStudents() : getAllStudents();
+            studentCount.textContent = studentsToShow.length;
+            
+            if (studentsToShow.length === 0) {
+                studentsList.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
+            
+            studentsList.innerHTML = studentsToShow.map(student => `
+                <div class="bg-white card-shadow rounded-lg p-3 flex justify-between items-center">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                            <span class="text-sm font-semibold text-blue-600">${student.firstName.charAt(0)}${student.lastName.charAt(0)}</span>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-800">${student.fullName}</p>
+                            <p class="text-sm text-gray-500">Parent: ${student.parentName} • ${student.parentPhone}</p>
+                            ${currentUser && currentUser.role === 'admin' ? `<p class="text-xs text-gray-400">Class: ${student.teacherClass || 'Unassigned'}</p>` : ''}
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        ${currentUser && currentUser.role === 'admin' ? `<button onclick="assignStudentToClass('${student.id}')" class="text-purple-600 hover:bg-purple-50 p-2 rounded" title="Assign Class">📚</button>` : ''}
+                        <button onclick="editStudent('${student.id}')" class="text-blue-600 hover:bg-blue-50 p-2 rounded" title="Edit">✏️</button>
+                        <button onclick="removeStudentConfirm('${student.id}')" class="text-red-600 hover:bg-red-50 p-2 rounded" title="Remove">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function populateStudentSelect() {
+            const studentSelect = document.getElementById('studentSelect');
+            const noStudentsMessage = document.getElementById('noStudentsMessage');
+            
+            if (!studentSelect) return;
+            
+            // Clear existing options except the first one
+            studentSelect.innerHTML = '<option value="">Choose a student...</option>';
+            
+            // Get students based on user role
+            const studentsToShow = currentUser && currentUser.role === 'teacher' ? getTeacherStudents() : getAllStudents();
+            
+            if (studentsToShow.length === 0) {
+                if (noStudentsMessage) noStudentsMessage.classList.remove('hidden');
+                return;
+            }
+            
+            if (noStudentsMessage) noStudentsMessage.classList.add('hidden');
+            
+            studentsToShow.forEach(student => {
+                const option = document.createElement('option');
+                option.value = student.id;
+                option.textContent = student.fullName;
+                studentSelect.appendChild(option);
+            });
+        }
+        
+        function removeStudentConfirm(studentId) {
+            const student = classStudents.find(s => s.id === studentId);
+            if (student && confirm(`Remove ${student.fullName} from your class?`)) {
+                removeStudent(studentId);
+                renderStudentsList();
+                showToast(`${student.fullName} removed from class`);
+            }
+        }
+        
+        function editStudent(studentId) {
+            const student = classStudents.find(s => s.id === studentId);
+            if (!student) return;
+            
+            const newFirstName = prompt('First Name:', student.firstName);
+            if (newFirstName === null) return;
+            
+            const newLastName = prompt('Last Name:', student.lastName);
+            if (newLastName === null) return;
+            
+            const newParentName = prompt('Parent/Guardian Name:', student.parentName);
+            if (newParentName === null) return;
+            
+            const newParentPhone = prompt('Parent Phone:', student.parentPhone);
+            if (newParentPhone === null) return;
+            
+            if (newFirstName.trim() && newLastName.trim() && newParentName.trim() && newParentPhone.trim()) {
+                student.firstName = newFirstName.trim();
+                student.lastName = newLastName.trim();
+                student.fullName = `${newFirstName.trim()} ${newLastName.trim()}`;
+                student.parentName = newParentName.trim();
+                student.parentPhone = newParentPhone.trim();
+                
+                localStorage.setItem('classStudents', JSON.stringify(classStudents));
+                renderStudentsList();
+                showToast(`${student.fullName} updated successfully`);
+            }
+        }
+        
+        function assignStudentToClass(studentId) {
+            const student = classStudents.find(s => s.id === studentId);
+            if (!student) return;
+            
+            // Get available classes
+            const generatedCodes = JSON.parse(localStorage.getItem('generatedCodes') || '[]');
+            const teacherClasses = generatedCodes
+                .filter(code => code.type === 'teacher' && code.class)
+                .map(code => code.class);
+            const uniqueClasses = [...new Set(teacherClasses)];
+            
+            if (uniqueClasses.length === 0) {
+                showToast('No teacher classes available. Generate teacher codes first.');
+                return;
+            }
+            
+            const classOptions = uniqueClasses.map(className => `"${className}"`).join(', ');
+            const selectedClass = prompt(`Assign ${student.fullName} to which class?\n\nAvailable classes: ${classOptions}\n\nEnter class name (or leave empty to unassign):`, student.teacherClass || '');
+            
+            if (selectedClass === null) return; // User cancelled
+            
+            if (selectedClass.trim() === '') {
+                // Unassign from class
+                student.teacherClass = null;
+                showToast(`${student.fullName} unassigned from class`);
+            } else if (uniqueClasses.includes(selectedClass.trim())) {
+                // Assign to class
+                student.teacherClass = selectedClass.trim();
+                showToast(`${student.fullName} assigned to ${selectedClass.trim()}`);
+            } else {
+                showToast('Invalid class name. Please choose from available classes.');
+                return;
+            }
+            
+            localStorage.setItem('classStudents', JSON.stringify(classStudents));
+            renderStudentsList();
+            updateAdminStats();
+        }
+        
+        function clearAllStudents() {
+            const studentsToShow = currentUser && currentUser.role === 'teacher' ? getTeacherStudents() : getAllStudents();
+            
+            if (studentsToShow.length === 0) {
+                showToast('No students to clear');
+                return;
+            }
+            
+            const confirmMessage = currentUser && currentUser.role === 'teacher' 
+                ? `Remove all ${studentsToShow.length} students from your class? This cannot be undone.`
+                : `Remove all ${studentsToShow.length} students from the system? This cannot be undone.`;
+            
+            if (confirm(confirmMessage)) {
+                if (currentUser && currentUser.role === 'teacher') {
+                    // Remove only teacher's students
+                    classStudents = classStudents.filter(student => student.teacherClass !== currentUser.class);
+                } else {
+                    // Admin removes all students
+                    classStudents = [];
+                }
+                
+                localStorage.setItem('classStudents', JSON.stringify(classStudents));
+                renderStudentsList();
+                
+                if (currentUser && currentUser.role === 'admin') {
+                    updateAdminStats();
+                }
+                
+                showToast('Students removed successfully');
+            }
+        }
+        
+        function importStudents() {
+            const csvText = prompt(`Import students from CSV format:
+            
+Format: FirstName,LastName,ParentName,ParentPhone
+Example:
+John,Doe,Jane Doe,+234 801 234 5678
+Mary,Smith,Bob Smith,+234 802 345 6789
+
+Paste your CSV data:`);
+            
+            if (!csvText) return;
+            
+            const lines = csvText.trim().split('\n');
+            let imported = 0;
+            let errors = [];
+            
+            lines.forEach((line, index) => {
+                const parts = line.split(',').map(part => part.trim());
+                if (parts.length >= 4) {
+                    const [firstName, lastName, parentName, parentPhone] = parts;
+                    if (firstName && lastName && parentName && parentPhone) {
+                        addStudent(firstName, lastName, parentName, parentPhone);
+                        imported++;
+                    } else {
+                        errors.push(`Line ${index + 1}: Missing required fields`);
+                    }
+                } else {
+                    errors.push(`Line ${index + 1}: Invalid format`);
+                }
+            });
+            
+            renderStudentsList();
+            
+            if (imported > 0) {
+                showToast(`Successfully imported ${imported} students`);
+            }
+            
+            if (errors.length > 0) {
+                alert(`Import completed with errors:\n${errors.join('\n')}`);
+            }
+        }
+        
+        function exportStudents() {
+            if (classStudents.length === 0) {
+                showToast('No students to export');
+                return;
+            }
+            
+            const csvContent = 'FirstName,LastName,ParentName,ParentPhone\n' + 
+                classStudents.map(student => 
+                    `${student.firstName},${student.lastName},${student.parentName},${student.parentPhone}`
+                ).join('\n');
+            
+            // Create download link
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `class-students-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showToast(`Exported ${classStudents.length} students to CSV`);
+        }
+        
+        // Add Student Form Handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const addStudentForm = document.getElementById('addStudentForm');
+            if (addStudentForm) {
+                addStudentForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    
+                    const firstName = document.getElementById('studentFirstName').value;
+                    const lastName = document.getElementById('studentLastName').value;
+                    const parentName = document.getElementById('parentName').value;
+                    const parentPhone = document.getElementById('parentPhone').value;
+                    const assignedClass = document.getElementById('assignClassSelect') ? document.getElementById('assignClassSelect').value : null;
+                    
+                    if (!firstName.trim() || !lastName.trim() || !parentName.trim() || !parentPhone.trim()) {
+                        showToast('Please fill in all fields');
+                        return;
+                    }
+                    
+                    // Check for duplicate names
+                    const fullName = `${firstName.trim()} ${lastName.trim()}`;
+                    const duplicate = classStudents.find(student => 
+                        student.fullName.toLowerCase() === fullName.toLowerCase()
+                    );
+                    
+                    if (duplicate) {
+                        showToast('A student with this name already exists');
+                        return;
+                    }
+                    
+                    const student = addStudent(firstName, lastName, parentName, parentPhone, assignedClass);
+                    renderStudentsList();
+                    
+                    const classInfo = assignedClass ? ` to ${assignedClass}` : '';
+                    showToast(`${student.fullName} added${classInfo}`);
+                    
+                    // Update admin stats if admin
+                    if (currentUser && currentUser.role === 'admin') {
+                        updateAdminStats();
+                    }
+                    
+                    // Reset form
+                    addStudentForm.reset();
+                });
+            }
+        });
+        
+        // Cloud sync configuration
+        const JSONBIN_CONFIG = {
+            binId: '68dea55eae596e708f03d001', // Your JSON Bin ID
+            apiKey: '$2a$10$ywB2dAUgv2aHxXtmxw.HNe6n1tp0j.vSY1LkTi1s2XckLkbqTOQlW', // Your JSON Bin API key
+            baseUrl: 'https://api.jsonbin.io/v3/b'
+        };
+        
+        // Starter data structure for JSON Bin
+        const STARTER_DATA = {
+            adminAccount: null,
+            generatedCodes: [],
+            classStudents: [],
+            messages: [],
+            drafts: [],
+            schoolSettings: {
+                schoolName: "",
+                timezone: "Africa/Lagos",
+                academicYear: "2024/2025",
+                terms: ["First Term", "Second Term", "Third Term"],
+                currentTerm: "First Term"
+            },
+            lastSync: null,
+            version: "1.0"
+        };
+        
+        // Cloud sync functions
+        async function syncToCloud() {
+            if (!JSONBIN_CONFIG.binId || !JSONBIN_CONFIG.apiKey) {
+                console.log('❌ Cloud sync not configured');
+                return false;
+            }
+            
+            try {
+                console.log('🔄 Uploading data to cloud...');
+                
+                const data = {
+                    adminAccount: JSON.parse(localStorage.getItem('adminAccount') || 'null'),
+                    generatedCodes: JSON.parse(localStorage.getItem('generatedCodes') || '[]'),
+                    classStudents: JSON.parse(localStorage.getItem('classStudents') || '[]'),
+                    messages: JSON.parse(localStorage.getItem('messages') || '[]'),
+                    drafts: JSON.parse(localStorage.getItem('drafts') || '[]'),
+                    schoolSettings: JSON.parse(localStorage.getItem('schoolSettings') || JSON.stringify(STARTER_DATA.schoolSettings)),
+                    lastSync: new Date().toISOString(),
+                    version: "1.0"
+                };
+                
+                console.log('📊 Data summary:', {
+                    hasAdmin: !!data.adminAccount,
+                    codes: data.generatedCodes.length,
+                    students: data.classStudents.length,
+                    messages: data.messages.length,
+                    drafts: data.drafts.length
+                });
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => {
+                    console.log('⏰ Upload timeout after 15 seconds');
+                    controller.abort();
+                }, 15000);
+                
+                const response = await fetch(`${JSONBIN_CONFIG.baseUrl}/${JSONBIN_CONFIG.binId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_CONFIG.apiKey,
+                        'X-Bin-Versioning': 'false'
+                    },
+                    body: JSON.stringify(data),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                console.log('📤 Upload response:', response.status, response.statusText);
+                
+                if (response.status === 401 || response.status === 403) {
+                    console.log('🔐 Upload authentication failed');
+                    showToast('🔐 Cloud upload authentication failed');
+                    return false;
+                }
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.log('❌ Upload failed:', response.status, errorText);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ Upload successful:', result.metadata || 'confirmed');
+                
+                localStorage.setItem('lastCloudSync', new Date().toISOString());
+                showToast('✅ Data uploaded to cloud');
+                return true;
+                
+            } catch (error) {
+                console.error('💥 Cloud upload failed:', error);
+                
+                if (error.name === 'AbortError') {
+                    console.log('⏰ Upload timed out');
+                    showToast('⏰ Cloud upload timed out');
+                } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    console.log('🌐 Network error during upload');
+                    showToast('🌐 Upload failed - check connection');
+                } else {
+                    console.log('❌ Upload error:', error.message);
+                    showToast('❌ Cloud upload failed');
+                }
+                return false;
+            }
+        }
+        
+        async function syncFromCloud() {
+            if (!JSONBIN_CONFIG.binId || !JSONBIN_CONFIG.apiKey) {
+                console.log('❌ Cloud sync not configured - missing credentials');
+                return false;
+            }
+            
+            console.log('🔄 Starting cloud sync from:', JSONBIN_CONFIG.binId);
+            
+            try {
+                // Simplified single endpoint approach with better error handling
+                const endpoint = `${JSONBIN_CONFIG.baseUrl}/${JSONBIN_CONFIG.binId}`;
+                console.log('📡 Connecting to:', endpoint);
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => {
+                    console.log('⏰ Request timeout after 10 seconds');
+                    controller.abort();
+                }, 10000); // 10 second timeout
+                
+                const response = await fetch(endpoint, {
+                    method: 'GET',
+                    headers: {
+                        'X-Master-Key': JSONBIN_CONFIG.apiKey,
+                        'X-Bin-Meta': 'false'
+                    },
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                console.log('📊 Response received:', response.status, response.statusText);
+                
+                if (response.status === 404) {
+                    console.log('📭 Bin not found - this is normal for first-time setup');
+                    showToast('📭 No cloud data found - starting fresh');
+                    return false;
+                }
+                
+                if (response.status === 401 || response.status === 403) {
+                    console.log('🔐 Authentication failed - check API key');
+                    showToast('🔐 Cloud authentication failed');
+                    return false;
+                }
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.log('❌ HTTP Error:', response.status, errorText);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                console.log('✅ Parsing response data...');
+                const cloudData = await response.json();
+                console.log('📦 Cloud data keys:', Object.keys(cloudData || {}));
+                
+                // Handle JSONBin response format
+                let data = cloudData;
+                if (cloudData.record) {
+                    data = cloudData.record;
+                    console.log('📋 Using nested record data');
+                }
+                
+                // Validate data structure
+                if (!data || typeof data !== 'object') {
+                    console.log('❌ Invalid data format received');
+                    showToast('❌ Invalid cloud data format');
+                    return false;
+                }
+                
+                console.log('🔍 Processing data sections...');
+                let updatedSections = 0;
+                
+                // Update each section safely
+                const sections = [
+                    { key: 'adminAccount', validator: (val) => val === null || typeof val === 'object' },
+                    { key: 'generatedCodes', validator: Array.isArray },
+                    { key: 'classStudents', validator: Array.isArray },
+                    { key: 'messages', validator: Array.isArray },
+                    { key: 'drafts', validator: Array.isArray },
+                    { key: 'schoolSettings', validator: (val) => typeof val === 'object' && val !== null }
+                ];
+                
+                sections.forEach(section => {
+                    if (data[section.key] !== undefined && section.validator(data[section.key])) {
+                        localStorage.setItem(section.key, JSON.stringify(data[section.key]));
+                        const count = Array.isArray(data[section.key]) ? data[section.key].length : 'updated';
+                        console.log(`💾 ${section.key}: ${count}`);
+                        updatedSections++;
+                    }
+                });
+                
+                // Update global variables
+                classStudents = JSON.parse(localStorage.getItem('classStudents') || '[]');
+                drafts = JSON.parse(localStorage.getItem('drafts') || '[]');
+                
+                localStorage.setItem('lastCloudSync', new Date().toISOString());
+                
+                console.log(`✅ Successfully synced ${updatedSections} sections from cloud`);
+                showToast(`✅ Cloud sync complete (${updatedSections} sections)`);
+                return true;
+                
+            } catch (error) {
+                console.error('💥 Cloud sync failed:', error);
+                
+                // Better error categorization
+                if (error.name === 'AbortError') {
+                    console.log('⏰ Request timed out');
+                    showToast('⏰ Cloud sync timed out');
+                } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    console.log('🌐 Network connection failed');
+                    showToast('🌐 No internet connection');
+                } else if (error.message.includes('CORS')) {
+                    console.log('🚫 CORS error - API configuration issue');
+                    showToast('🚫 Cloud API configuration error');
+                } else {
+                    console.log('❌ Unexpected error:', error.message);
+                    showToast('❌ Cloud sync failed');
+                }
+                
+                return false;
+            }
+        }
+        
+        function setupCloudSync(binId, apiKey) {
+            JSONBIN_CONFIG.binId = binId;
+            JSONBIN_CONFIG.apiKey = apiKey;
+            
+            // Auto-sync every 5 minutes when online
+            setInterval(() => {
+                if (!isOffline && currentUser) {
+                    syncToCloud();
+                }
+            }, 5 * 60 * 1000);
+            
+            showToast('🌐 Cloud sync configured');
+        }
+        
+        // Initialize app with enhanced cloud sync
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 App initializing...');
+            
+            // Always initialize global variables first
+            classStudents = JSON.parse(localStorage.getItem('classStudents') || '[]');
+            drafts = JSON.parse(localStorage.getItem('drafts') || '[]');
+            
+            // Always ensure we have basic data structure first
+            if (!localStorage.getItem('generatedCodes')) {
+                localStorage.setItem('generatedCodes', JSON.stringify([]));
+                console.log('🔧 Initialized generatedCodes');
+            }
+            if (!localStorage.getItem('messages')) {
+                localStorage.setItem('messages', JSON.stringify([]));
+                console.log('🔧 Initialized messages');
+            }
+            if (!localStorage.getItem('classStudents')) {
+                localStorage.setItem('classStudents', JSON.stringify([]));
+                console.log('🔧 Initialized classStudents');
+            }
+            if (!localStorage.getItem('drafts')) {
+                localStorage.setItem('drafts', JSON.stringify([]));
+                console.log('🔧 Initialized drafts');
+            }
+            if (!localStorage.getItem('schoolSettings')) {
+                localStorage.setItem('schoolSettings', JSON.stringify(STARTER_DATA.schoolSettings));
+                console.log('🔧 Initialized schoolSettings');
+            }
+            
+            // Debug cloud configuration
+            console.log('🔍 Cloud config check:', {
+                hasBinId: !!JSONBIN_CONFIG.binId,
+                binIdLength: JSONBIN_CONFIG.binId ? JSONBIN_CONFIG.binId.length : 0,
+                hasApiKey: !!JSONBIN_CONFIG.apiKey,
+                apiKeyLength: JSONBIN_CONFIG.apiKey ? JSONBIN_CONFIG.apiKey.length : 0,
+                baseUrl: JSONBIN_CONFIG.baseUrl
+            });
+            
+            // Check what data we have locally
+            const hasLocalData = localStorage.getItem('adminAccount') || 
+                                localStorage.getItem('classStudents') !== '[]' || 
+                                localStorage.getItem('messages') !== '[]' ||
+                                localStorage.getItem('generatedCodes') !== '[]';
+            
+            console.log('📊 Local data status:', {
+                hasAdminAccount: !!localStorage.getItem('adminAccount'),
+                studentsCount: JSON.parse(localStorage.getItem('classStudents') || '[]').length,
+                messagesCount: JSON.parse(localStorage.getItem('messages') || '[]').length,
+                codesCount: JSON.parse(localStorage.getItem('generatedCodes') || '[]').length,
+                hasLocalData: hasLocalData
+            });
+            
+            // Try cloud sync if we have credentials
+            if (JSONBIN_CONFIG.binId && JSONBIN_CONFIG.apiKey) {
+                console.log('🌐 Cloud credentials available, attempting sync...');
+                console.log('🔗 Full endpoint URL:', `${JSONBIN_CONFIG.baseUrl}/${JSONBIN_CONFIG.binId}`);
+                
+                try {
+                    // Test connection first with a simple request
+                    console.log('🧪 Testing cloud connection...');
+                    
+                    const testResponse = await fetch(`${JSONBIN_CONFIG.baseUrl}/${JSONBIN_CONFIG.binId}`, {
+                        method: 'GET',
+                        headers: {
+                            'X-Master-Key': JSONBIN_CONFIG.apiKey,
+                            'X-Bin-Meta': 'false'
+                        }
+                    }).catch(error => {
+                        console.log('🚫 Connection test failed:', error.message);
+                        return null;
+                    });
+                    
+                    if (testResponse) {
+                        console.log('🔗 Connection test result:', testResponse.status, testResponse.statusText);
+                        
+                        if (testResponse.status === 404) {
+                            console.log('📭 Bin not found - will create on first upload');
+                            showToast('📭 Cloud storage ready - no existing data');
+                        } else if (testResponse.status === 401 || testResponse.status === 403) {
+                            console.log('🔐 Authentication failed - check credentials');
+                            showToast('🔐 Cloud authentication failed');
+                        } else if (testResponse.ok) {
+                            console.log('✅ Connection successful, loading data...');
+                            const cloudLoaded = await syncFromCloud();
+                            
+                            if (cloudLoaded) {
+                                console.log('✅ Cloud data loaded successfully');
+                                // Refresh global variables after cloud load
+                                classStudents = JSON.parse(localStorage.getItem('classStudents') || '[]');
+                                drafts = JSON.parse(localStorage.getItem('drafts') || '[]');
+                            }
+                        } else {
+                            console.log('⚠️ Unexpected response:', testResponse.status);
+                        }
+                    } else {
+                        console.log('🌐 No internet connection or CORS issue');
+                        showToast('🌐 Using offline mode');
+                    }
+                } catch (error) {
+                    console.log('❌ Cloud sync error during startup:', error.message);
+                    showToast('📱 Using local data only');
+                }
+            } else {
+                console.log('🔒 No cloud credentials configured');
+                showToast('📱 Running in local mode');
+            }
+            
+            // Final data status
+            const finalDataStatus = {
+                adminAccount: !!localStorage.getItem('adminAccount'),
+                studentsCount: JSON.parse(localStorage.getItem('classStudents') || '[]').length,
+                messagesCount: JSON.parse(localStorage.getItem('messages') || '[]').length,
+                codesCount: JSON.parse(localStorage.getItem('generatedCodes') || '[]').length
+            };
+            
+            console.log('📈 Final data status:', finalDataStatus);
+            console.log('✅ App initialization complete');
+            
+            // Show the splash screen
+            showScreen('splashScreen');
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9885973ac47788bc',t:'MTc1OTQyMjY5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
